@@ -12,7 +12,7 @@ public interface ProdutoRepository {
 
     Produto findById(int id) throws SQLException;
 
-    Produto update(Produto produto) throws SQLException;
+    Produto update(Produto produto, int idOriginal) throws SQLException;
 
     void deleteById(int id) throws SQLException;
 }
