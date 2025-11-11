@@ -16,7 +16,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
     }
 
     @Override
-    public Produto findById() {
+    public Produto findById(int id) {
         return null;
     }
 
