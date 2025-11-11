@@ -11,18 +11,22 @@ public class ProdutoServiceImpl implements ProdutoService{
     ProdutoRepositoryImpl produtoRepository = new ProdutoRepositoryImpl();
 
     @Override
-    public Produto cadastrarProduto(Produto produto) throws SQLException {
+    public Produto cadastrarProduto(Produto produto){
        Produto produtoCadastrado = null;
-        try{
-            produtoCadastrado = produtoRepository.save(produto);
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return produtoCadastrado;
+       try{
+           if(produto.getPreco() < 0){
+              throw new IllegalArgumentException("Preço deve ser positivo.");
+           }else{
+               produtoCadastrado = produtoRepository.save(produto);
+           }
+       }catch (SQLException e){
+           e.printStackTrace();
+       }
+       return produtoCadastrado;
     }
 
     @Override
-    public List<Produto> listarProdutos() throws SQLException {
+    public List<Produto> listarProdutos(){
         List<Produto> produtos = new ArrayList<>();
         try{
             produtos = produtoRepository.findAll();
@@ -33,10 +37,13 @@ public class ProdutoServiceImpl implements ProdutoService{
     }
 
     @Override
-    public Produto buscarPorId(int id) throws SQLException {
+    public Produto buscarPorId(int id){
         Produto produto = null;
         try{
             produto = produtoRepository.findById(id);
+            if (produto == null){
+                return null;
+            }
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -44,10 +51,15 @@ public class ProdutoServiceImpl implements ProdutoService{
     }
 
     @Override
-    public Produto atualizarProduto(Produto produto, int id) throws SQLException {
+    public Produto atualizarProduto(Produto produto, int id){
         Produto produtoAtualizado = null;
         try{
-            produtoAtualizado = produtoRepository.update(produto, id);
+            Produto p = produtoRepository.findById(id);
+            if (p == null){
+                return null;
+            }else{
+                produtoAtualizado = produtoRepository.update(produto, id);
+            }
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -55,10 +67,15 @@ public class ProdutoServiceImpl implements ProdutoService{
     }
 
     @Override
-    public boolean excluirProduto(int id) throws SQLException {
+    public boolean excluirProduto(int id){
         try{
-            produtoRepository.deleteById(id);
-            return true;
+            Produto produto = produtoRepository.findById(id);
+            if (produto == null){
+                return false;
+            }else{
+                produtoRepository.deleteById(id);
+                return true;
+            }
         }catch (SQLException e){
             e.printStackTrace();
         }

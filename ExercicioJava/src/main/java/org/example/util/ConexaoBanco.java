@@ -11,6 +11,6 @@ public class ConexaoBanco {
     private static final String PASSWORD = "mysqlPW";
 
     public static Connection conectar() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        return DriverManager.getConnection(URL,USER,PASSWORD);
     }
 }

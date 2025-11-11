@@ -6,6 +6,7 @@ import org.junit.jupiter.api.*;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
@@ -131,7 +132,7 @@ public class ProdutoServiceIntegrationTest {
 
     @Test
     @DisplayName("Deve listar todos os produtos cadastrados")
-    void testListarProdutos() {
+    void testListarProdutos() throws SQLException {
         // ARRANGE
         produtoService.cadastrarProduto(new Produto("Teclado", 150.00, 20, "Periféricos"));
         produtoService.cadastrarProduto(new Produto("Webcam", 400.00, 5, "Eletrônicos"));
@@ -188,7 +189,7 @@ public class ProdutoServiceIntegrationTest {
 
     @Test
     @DisplayName("Deve retornar false ao tentar excluir ID inexistente")
-    void testExcluirProduto_NaoEncontrado() {
+    void testExcluirProduto_NaoEncontrado() throws SQLException{
         // ACT
         boolean resultado = produtoService.excluirProduto(999);
 

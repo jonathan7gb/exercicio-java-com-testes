@@ -3,10 +3,7 @@ package org.example.repository;
 import org.example.model.Produto;
 import org.example.util.ConexaoBanco;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,13 +15,24 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
                 VALUES (?, ?, ?, ?)
                 """;
 
+        int id = 0;
         try(Connection connection = ConexaoBanco.conectar();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, produto.getNome());
             preparedStatement.setDouble(2, produto.getPreco());
             preparedStatement.setInt(3, produto.getQuantidade());
             preparedStatement.setString(4, produto.getCategoria());
-            preparedStatement.execute();
+            int affectedRows = preparedStatement.executeUpdate();
+
+            if (affectedRows > 0) {
+                try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        id = rs.getInt(1);
+                        produto.setId(id);
+                    }
+                }
+            }
+
         }
         return produto;
     }
@@ -32,7 +40,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
     @Override
     public List<Produto> findAll() throws SQLException {
         String  sql = """
-                SELECT (id, nome, preco, quantidade, categoria) 
+                SELECT (nome)
                 FROM produto;
         """;
 
@@ -43,11 +51,7 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
             ResultSet rs = preparedStatement.executeQuery();
             while(rs.next()){
                 Produto produto = new Produto();
-                produto.setId(rs.getInt("id"));
                 produto.setNome(rs.getString("nome"));
-                produto.setPreco(rs.getDouble("preco"));
-                produto.setQuantidade(rs.getInt("quantidade"));
-                produto.setCategoria(rs.getString("categoria"));
                 produtos.add(produto);
             }
         }
@@ -57,22 +61,19 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
     @Override
     public Produto findById(int id) throws SQLException {
         String  sql = """
-                SELECT (id, nome, preco, quantidade, categoria) 
+                SELECT (nome)
                 FROM produto
                 WHERE id = ?;
         """;
 
-        Produto produto = new Produto();
+        Produto produto = null;
         try(Connection connection = ConexaoBanco.conectar();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
             preparedStatement.setInt(1, id);
             ResultSet rs = preparedStatement.executeQuery();
             if(rs.next()){
-                produto.setId(rs.getInt("id"));
+                produto = new Produto();
                 produto.setNome(rs.getString("nome"));
-                produto.setPreco(rs.getDouble("preco"));
-                produto.setQuantidade(rs.getInt("quantidade"));
-                produto.setCategoria(rs.getString("categoria"));
             }
         }
         return produto;
@@ -91,15 +92,12 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
 
         try(Connection connection = ConexaoBanco.conectar();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+            preparedStatement.setString(1, produto.getNome());
+            preparedStatement.setDouble(2, produto.getPreco());
+            preparedStatement.setInt(3, produto.getQuantidade());
+            preparedStatement.setString(4, produto.getCategoria());
             preparedStatement.setInt(5, idOriginal);
-            ResultSet rs = preparedStatement.executeQuery();
-            if(rs.next()){
-                produto.setId(rs.getInt("id"));
-                produto.setNome(rs.getString("nome"));
-                produto.setPreco(rs.getDouble("preco"));
-                produto.setQuantidade(rs.getInt("quantidade"));
-                produto.setCategoria(rs.getString("categoria"));
-            }
+            preparedStatement.executeUpdate();
         }
         return produto;
     }
@@ -107,13 +105,14 @@ public class ProdutoRepositoryImpl implements ProdutoRepository{
     @Override
     public void deleteById(int id) throws SQLException {
         String  sql = """
-                DELETE FROM produto 
+                DELETE FROM produto
                 WHERE id = ?;
         """;
 
         try(Connection connection = ConexaoBanco.conectar();
             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
             preparedStatement.setInt(1, id);
+            preparedStatement.executeUpdate();
         }
     }
 }
